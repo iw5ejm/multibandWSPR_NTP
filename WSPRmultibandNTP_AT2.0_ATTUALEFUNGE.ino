@@ -1,5 +1,9 @@
 // Si5351_WSPR
 //
+
+// CHANGE FREQUENCY, CALL, LOCATOR AND SSID & WIFI PASSWORD (IN void setup())
+
+
 // Simple WSPR beacon for Arduino Uno, with the Etherkit Si5351A Breakout
 // Board, by Jason Milldrum NT7S.
 // 
@@ -273,7 +277,7 @@ void setup()
 //  if (espATCommand("AT+CWMODE_CUR=1", OK_STR, SHORT_PAUSE)) pcmonitor.println("Wireless client mode selected"); //Set the wireless mode
 //  espATCommand("AT+CWQAP", OK_STR, SHORT_PAUSE);   //disconnect  - it shouldn't be but just to make sure
   pcmonitor.print("Trying to connect to WIFI");
-  while (!espATCommand("AT+CWJAP_CUR=\"TIM-82408153\",\"GGjyCC2yMyuYUrg4\"", OK_STR, LONG_PAUSE)) 
+  while (!espATCommand("AT+CWJAP_CUR=\"xxxxxSSIDxxxxxxxxx\",\"xxxxxxxxpasswordxxxxx\"", OK_STR, LONG_PAUSE)) 
   
     pcmonitor.print("."); // connect to wifi
   
