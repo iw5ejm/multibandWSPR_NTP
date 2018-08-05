@@ -69,9 +69,14 @@ SoftwareSerial pcmonitor(ARDUINO_RX_PIN, ARDUINO_TX_PIN); // rxPin (the pin on w
 // Global variables
 Si5351 si5351;
 JTEncode jtencode;
-unsigned long freq0 = 7040155UL;                  // Change this
+unsigned long freq0 = 28126158UL;                  // Change this
 unsigned long freq1 =  7040158UL;                // Change this
-unsigned long freq2 = 28126158UL;                // Change this
+unsigned long freq2 =  7040155UL;                // Change this
+unsigned long freq2bis = 10140102UL;                // Change this (second tx frequency for clock2)
+
+unsigned long freq2tx =  freq2;                
+boolean select = false; 
+
 
 char call[7] = "IW5EJM";                        // Change this
 char loc[5] = "JN53";                           // Change this
@@ -223,13 +228,18 @@ void encode()
 
     digitalWrite(TX_LED_PIN, HIGH);
     pcmonitor.println("TX ON");
-    
+
+    //choose the band for clock 2
+    if (select) freq2tx = freq2bis; 
+      else freq2tx=freq2;
+      pcmonitor.println(freq2tx);
+
     // Now do the rest of the message
     for(i = 0; i < SYMBOL_COUNT; i++)
     {
         si5351.set_freq((freq0 * 100) + (tx_buffer[i] * TONE_SPACING), SI5351_CLK0);
         //si5351.set_freq((freq1 * 100) + (tx_buffer[i] * TONE_SPACING), SI5351_CLK1);
-        si5351.set_freq((freq2 * 100) + (tx_buffer[i] * TONE_SPACING), SI5351_CLK2);
+        si5351.set_freq((freq2tx * 100) + (tx_buffer[i] * TONE_SPACING), SI5351_CLK2);
 
         proceed = false;
         while(!proceed);
@@ -241,6 +251,7 @@ void encode()
     si5351.set_clock_pwr(SI5351_CLK2, 0);
 
     digitalWrite(TX_LED_PIN, LOW);
+    select = !select;
     pcmonitor.println("TX OFF");
 }
  
@@ -262,11 +273,11 @@ void setup()
 //  if (espATCommand("AT+CWMODE_CUR=1", OK_STR, SHORT_PAUSE)) pcmonitor.println("Wireless client mode selected"); //Set the wireless mode
 //  espATCommand("AT+CWQAP", OK_STR, SHORT_PAUSE);   //disconnect  - it shouldn't be but just to make sure
   pcmonitor.print("Trying to connect to WIFI");
-  while (!espATCommand("AT+CWJAP_CUR=\"alan48\",\"qrq3aPe3\"", OK_STR, LONG_PAUSE)) 
+  while (!espATCommand("AT+CWJAP_CUR=\"TIM-82408153\",\"GGjyCC2yMyuYUrg4\"", OK_STR, LONG_PAUSE)) 
   
-  pcmonitor.print("."); // connect to wifi
+    pcmonitor.print("."); // connect to wifi
   
-    pcmonitor.println("WIFI connected");
+  pcmonitor.println("WIFI connected");
   if (espATCommand("AT+CIPSNTPCFG=1,0,\"time.google.com\",\"it.pool.ntp.org\",\"ntp.sjtu.edu.cn\"", OK_STR, LONG_PAUSE)) pcmonitor.println("NTP server connected");
     else  pcmonitor.println("ERROR in NTP server connection");
   
@@ -298,7 +309,7 @@ void setup()
   si5351.set_clock_pwr(SI5351_CLK1, 0); // Disable the clock initially
 
   // Set CLK2 output
-  si5351.set_freq(freq2 * 100, SI5351_CLK2);
+  si5351.set_freq(freq2tx * 100, SI5351_CLK2);
   si5351.drive_strength(SI5351_CLK2, SI5351_DRIVE_8MA); // Set for max power
   si5351.set_clock_pwr(SI5351_CLK2, 0); // Disable the clock initially
   
@@ -332,10 +343,10 @@ void loop()
 //      digitalWrite(SYNC_LED_PIN, LOW);  // LED off if needs refresh
 //     }
 
-  // Trigger every 5 minute
+  // Trigger every 10 minute
   // WSPR should start on the 1st second of the minute, but there's a slight delay
   // in this code because it is limited to 1 second resolution.
-  if(minute() % 5 == 0 && second() == 0)
+  if(minute() % 10 == 0 && second() == 0)
     {
       pcmonitor.print(hour());
       pcmonitor.print(":");
